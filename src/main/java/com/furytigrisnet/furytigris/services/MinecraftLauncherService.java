@@ -93,27 +93,47 @@ public class MinecraftLauncherService {
         var memoriaMim = "1024M";
         var memoriaMax = "4096M";
 
-        // Criando o objeto MinecraftParams com os valores a serem passados ao comando
-        var params = new MinecraftParams(
-                memoriaMim,
-                memoriaMax,
-                urlNatives,
-                urlLibraries,
-                jar.getAbsolutePath(),
-                OSHelper.getOS().getMc(),
+        // Armazenando a client e contatenar todas bibliotecas encontrado em librarias
+        StringBuilder classpath = new StringBuilder(jar.getAbsolutePath());
+        File librariesDir = new File(urlLibraries);
+        File[] libraryFiles = librariesDir.listFiles((dir, name) -> name.endsWith(".jar"));
+        if (libraryFiles != null) {
+            for (File library : libraryFiles) {
+                classpath.append(File.pathSeparator).append(library.getAbsolutePath());
+            }
+        } else {
+            System.err.println("Nenhuma biblioteca encontrada no diretório: " + urlLibraries);
+        }
+
+        return String.format(
+                "java -Xms%s -Xmx%s -Djava.library.path=\"%s\" -cp \"%s\" net.minecraft.client.main.Main " +
+                        "--accessToken %s --version %s --gameDir \"%s\" --assetsDir \"%s\" --assetsIndex %s --width %s --height %s --username %s --userType %s",
+                memoriaMim, memoriaMax, urlNatives, classpath,
+                "000", "1.8.8", OSHelper.getOS().getMc(),
                 OSHelper.getOS().getMc() + File.separator + "assets",
-                "854", // Largura da tela
-                "480", // Altura da tela
-                "_ZinhoZin", // Nome do usuário
-                "1.8.8", // Versão do Minecraft
-                "1.8.8", // Índice de recursos do Minecraft
-                "N/A", // UUID do usuário
-                "000", // Token de acesso
-                "mojang" // Tipo de usuário
+                "1.8.8", "854", "480", "_ZinhoZin", "mojang"
         );
+//        // Criando o objeto MinecraftParams
+//        var params = new MinecraftParams(
+//                memoriaMim,
+//                memoriaMax,
+//                urlNatives,
+//                classPath,
+//                jar.getAbsolutePath(),
+//                OSHelper.getOS().getMc(),
+//                OSHelper.getOS().getMc() + File.separator + "assets",
+//                "854", // Largura da tela
+//                "480", // Altura da tela
+//                "_ZinhoZin", // Nome do usuário
+//                "1.8.8", // Versão do Minecraft
+//                "1.8.8", // Índice de recursos do Minecraft
+//                "N/A", // UUID do usuário
+//                "000", // Token de acesso
+//                "mojang" // Tipo de usuário
+//        );
 
         // Retornando o comando formatado
-        return params.buildMinecraftCommand();
+//        return params.buildMinecraftCommand();
     }
 
     /**
